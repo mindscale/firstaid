@@ -1,6 +1,5 @@
 from io import BytesIO
 
-import matplotlib.pyplot as plt
 import pandas as pd
 from PIL import Image
 from pptx import Presentation

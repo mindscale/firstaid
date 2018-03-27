@@ -1,3 +1,5 @@
+from itertools import combinations
+
 import pandas as pd
 
 from firstaid.pptx import PPTX
@@ -59,3 +61,18 @@ def test_plot2():
     p = PPTX()
     p.add('This is a test', d1, d2)
     p.save('tests/presentation_test_results/test_plot2.pptx')
+
+
+def test_mixed_combinations():
+    bullet = ['first bullet', 'second bullet']
+    img = 'tests/image.png'
+    df = pd.DataFrame([[1, 2, 3], [4, 5, 6]], columns=['a', 'b', 'c'], index=['남', '여'])
+    d = {'df': df, 'chart_type': 'line'}
+
+    all_cases = [bullet, img, df, d]
+    comb = list(combinations(all_cases, 2))
+
+    p = PPTX()
+    for i, (left, right) in enumerate(comb):
+        p.add('This is a test', left, right)
+    p.save('tests/presentation_test_results/test_combination.pptx')
