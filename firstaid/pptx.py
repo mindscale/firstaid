@@ -1,8 +1,11 @@
 from io import BytesIO
 
+import matplotlib.pyplot as plt
 import pandas as pd
 from PIL import Image
 from pptx import Presentation
+from pptx.chart.data import ChartData
+from pptx.enum.chart import XL_CHART_TYPE
 from pptx.util import Cm, Pt
 
 
@@ -80,14 +83,36 @@ class PPTX():
         for i, row in enumerate(df.index):
             for e, item in enumerate(df.loc[row]):
                 table.cell(i + 1, e + 1).text = str(item)
+        return table
 
-    def classify(self, shapes, content, placeholder, layout_number, placeholder_obj=None):
+    def add_plot(self, shapes, plot_dict, placeholder, layout_number):
+        chart_data = ChartData()
+        df = plot_dict['df']
+        chart_data.categories = df.columns
+        for i, r in enumerate(df.index):
+            chart_data.add_series(str(r), df.iloc[i])
+
+        chart_type_dict = {'bar': XL_CHART_TYPE.COLUMN_CLUSTERED,
+                           'line': XL_CHART_TYPE.LINE}
+        chart_type = chart_type_dict[plot_dict['chart_type']]
+
+        x, width, height = self.object_size(placeholder, layout_number)
+
+        chart = shapes.add_chart(chart_type, Pt(x), Pt(self.Y), Pt(width), Pt(height), chart_data).chart
+        chart.has_legend = True
+        chart.legend.include_in_layout = False
+        chart.value_axis.has_major_gridlines = False
+        return shapes
+
+    def classify(self, shapes, content, placeholder, layout_number):
         if isinstance(content, list):
             return self.add_bulletpoint(shapes, content, placeholder)
         elif isinstance(content, str):
             return self.add_image(shapes, content, placeholder, layout_number)
         elif isinstance(content, pd.DataFrame):
             return self.add_table(shapes, content, placeholder, layout_number)
+        elif isinstance(content, dict):
+            return self.add_plot(shapes, content, placeholder, layout_number)
 
     def add(self, title, content1, content2=None):
         # slide layout

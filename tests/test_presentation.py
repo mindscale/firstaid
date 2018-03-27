@@ -40,3 +40,22 @@ def test_table2():
     p = PPTX()
     p.add('This is a test', df1, df2)
     p.save('tests/presentation_test_results/test_table2.pptx')
+
+
+def test_plot1():
+    df = pd.DataFrame([[1, 2, 3], [4, 5, 6]], columns=['a', 'b', 'c'], index=['남', '여'])
+    d = {'df': df, 'chart_type': 'line'}
+
+    p = PPTX()
+    p.add('This is a test', d)
+    p.save('tests/presentation_test_results/test_plot1.pptx')
+
+
+def test_plot2():
+    df = pd.DataFrame([[1, 2, 3], [4, 5, 6]], columns=['a', 'b', 'c'], index=['남', '여'])
+    d1 = {'df': df, 'chart_type': 'line'}
+    d2 = {'df': df, 'chart_type': 'bar'}
+
+    p = PPTX()
+    p.add('This is a test', d1, d2)
+    p.save('tests/presentation_test_results/test_plot2.pptx')
