@@ -1,4 +1,5 @@
 from io import BytesIO
+import operator
 
 import pandas as pd
 from PIL import Image
@@ -36,27 +37,61 @@ class PPTX():
                 p.text = row
         return shapes
 
+    # def object_size(self, placeholder, layout_number, width=1000, height=1000):
+    #     """
+    #     find sizes for objects regardless of type
+    #     :param width: (initialized with randomly large number)
+    #     :param height: (initialized with randomly large number)
+    #     """
+    #     # TODO: shrink to ratio
+    #     if placeholder == 1:
+    #         if layout_number == 3:  # 2 item
+    #             x = self.X
+    #             width = min(width, self.TWO_ITEM_WIDTH)
+    #             height = min(height, self.ITEM_HEIGHT)
+    #         else:  # 1 item
+    #             width = min(self.ONE_ITEM_WIDTH, width)
+    #             height = min(self.ITEM_HEIGHT, height)
+    #             x = max((self.SLIDE_WIDTH - width) / 2, self.X)
+    #     else:
+    #         x = self.TWO_ITEM_X
+    #         width = min(width, self.TWO_ITEM_WIDTH)
+    #         height = min(height, self.ITEM_HEIGHT)
+    #
+    #     return x, width, height
+
     def object_size(self, placeholder, layout_number, width=1000, height=1000):
         """
         find sizes for objects regardless of type
         :param width: (initialized with randomly large number)
         :param height: (initialized with randomly large number)
         """
-        # TODO: shrink to ratio
-        if placeholder == 1:
-            if layout_number == 3:  # 2 item
-                x = self.X
-                width = min(width, self.TWO_ITEM_WIDTH)
-                height = min(height, self.ITEM_HEIGHT)
-            else:  # 1 item
-                width = min(self.ONE_ITEM_WIDTH, width)
-                height = min(self.ITEM_HEIGHT, height)
-                x = max((self.SLIDE_WIDTH - width) / 2, self.X)
-        else:
-            x = self.TWO_ITEM_X
-            width = min(width, self.TWO_ITEM_WIDTH)
-            height = min(height, self.ITEM_HEIGHT)
 
+        def resize(width, height, lim_width, lim_height):
+            sd = {'width': lim_width, 'height': lim_height}
+            d = {'width': width, 'height': height}
+            max_key = max(d.keys(), key=lambda k: d[k])
+
+            all_keys = list(d.keys())
+            all_keys.pop(all_keys.index(max_key))
+            counterpart = all_keys[0]
+
+            d['new_{}'.format(counterpart)] = sd[max_key] * d[counterpart] / d[max_key]
+            d['new_{}'.format(max_key)] = sd[max_key]
+            return d['new_width'], d['new_height']
+
+        if layout_number == 3:  # 2 items
+            if placeholder == 1:
+                x = self.X
+            else:
+                x = self.TWO_ITEM_X
+
+            width, height = resize(width, height, self.TWO_ITEM_WIDTH, self.ITEM_HEIGHT)
+
+        else:  # 1 item
+            # TODO
+            width, height = resize(width, height, self.ONE_ITEM_WIDTH, self.ITEM_HEIGHT)
+            x = max((self.SLIDE_WIDTH - width) / 2, self.X)
         return x, width, height
 
     def add_image(self, item, shapes, placeholder, layout_number):
@@ -73,9 +108,6 @@ class PPTX():
         x, width, height = self.object_size(placeholder, layout_number, width, height)
 
         # add image
-        width, height = int(width), int(height)
-        im = im.resize((width, height))
-
         fig = BytesIO()
         im.save(fig, 'PNG')
         fig.seek(0)
