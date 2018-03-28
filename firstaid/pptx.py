@@ -12,15 +12,16 @@ from pptx.util import Cm, Pt
 class PPTX():
     def __init__(self):
         self.prs = Presentation()
-        # dimensions
+
+        # slide dimensions
         self.SLIDE_HEIGHT = self.prs.slide_height.pt
         self.SLIDE_WIDTH = self.prs.slide_width.pt
         self.Y = Cm(4.45).pt
         self.X = Cm(1.27).pt
-        self.TWO_ITEM_WIDTH = Cm(11.22).pt
-        self.ITEM_HEIGHT = Cm(12.57).pt
         self.TWO_ITEM_X = Cm(12.91).pt
+        self.TWO_ITEM_WIDTH = Cm(11.22).pt
         self.ONE_ITEM_WIDTH = Cm(22.86).pt
+        self.ITEM_HEIGHT = Cm(12.57).pt
 
     def add_bulletpoint(self, item, shapes, placeholder, layout_number=None):
         """
@@ -37,61 +38,53 @@ class PPTX():
                 p.text = row
         return shapes
 
-    # def object_size(self, placeholder, layout_number, width=1000, height=1000):
-    #     """
-    #     find sizes for objects regardless of type
-    #     :param width: (initialized with randomly large number)
-    #     :param height: (initialized with randomly large number)
-    #     """
-    #     # TODO: shrink to ratio
-    #     if placeholder == 1:
-    #         if layout_number == 3:  # 2 item
-    #             x = self.X
-    #             width = min(width, self.TWO_ITEM_WIDTH)
-    #             height = min(height, self.ITEM_HEIGHT)
-    #         else:  # 1 item
-    #             width = min(self.ONE_ITEM_WIDTH, width)
-    #             height = min(self.ITEM_HEIGHT, height)
-    #             x = max((self.SLIDE_WIDTH - width) / 2, self.X)
-    #     else:
-    #         x = self.TWO_ITEM_X
-    #         width = min(width, self.TWO_ITEM_WIDTH)
-    #         height = min(height, self.ITEM_HEIGHT)
-    #
-    #     return x, width, height
-
-    def object_size(self, placeholder, layout_number, width=1000, height=1000):
+    def object_size(self, placeholder, layout_number, width=0, height=0):
         """
         find sizes for objects regardless of type
         :param width: (initialized with randomly large number)
         :param height: (initialized with randomly large number)
         """
 
-        def resize(width, height, lim_width, lim_height):
+        def resize(width, height, lim_width, lim_height, reverse=False):
+            width = lim_width if width == 0 else width
+            height = lim_height if height == 0 else height
+
             sd = {'width': lim_width, 'height': lim_height}
             d = {'width': width, 'height': height}
-            max_key = max(d.keys(), key=lambda k: d[k])
 
+            if reverse:  # horizontal placeholder
+                max_key = min(d.keys(), key=lambda k: d[k])
+            else:  # vertical placeholder
+                max_key = max(d.keys(), key=lambda k: d[k])
+
+            if d[max_key] > sd[max_key]:  # check if needs resizing
+                new_max_value = sd[max_key]
+            else:  # doesn't need resizing
+                return d['width'], d['height']
+
+            # find counterpart
             all_keys = list(d.keys())
             all_keys.pop(all_keys.index(max_key))
             counterpart = all_keys[0]
 
-            d['new_{}'.format(counterpart)] = sd[max_key] * d[counterpart] / d[max_key]
-            d['new_{}'.format(max_key)] = sd[max_key]
+            # adjust ratio
+            d['new_{}'.format(counterpart)] = new_max_value * d[counterpart] / d[max_key]
+            d['new_{}'.format(max_key)] = new_max_value
+
             return d['new_width'], d['new_height']
 
-        if layout_number == 3:  # 2 items
-            if placeholder == 1:
+        # resize according to layout
+        if layout_number == 3:  # 2 items on slide (vertical placeholders)
+            if placeholder == 1:  # left item
                 x = self.X
-            else:
+            else:  # right item
                 x = self.TWO_ITEM_X
-
             width, height = resize(width, height, self.TWO_ITEM_WIDTH, self.ITEM_HEIGHT)
 
-        else:  # 1 item
-            # TODO
-            width, height = resize(width, height, self.ONE_ITEM_WIDTH, self.ITEM_HEIGHT)
+        else:  # only 1 item on slide (horizontal placeholder)
+            width, height = resize(width, height, self.ONE_ITEM_WIDTH, self.ITEM_HEIGHT, reverse=True)
             x = max((self.SLIDE_WIDTH - width) / 2, self.X)
+
         return x, width, height
 
     def add_image(self, item, shapes, placeholder, layout_number):
@@ -160,12 +153,16 @@ class PPTX():
         """
         identifies content and returns appropriate functions
         """
+        # bullet point
         if isinstance(content, list):
             return self.add_bulletpoint(content, **kwargs)
+        # image
         elif isinstance(content, str):
             return self.add_image(content, **kwargs)
+        # table
         elif isinstance(content, pd.DataFrame):
             return self.add_table(content, **kwargs)
+        # chart
         elif isinstance(content, dict):
             return self.add_plot(content, **kwargs)
         else:
