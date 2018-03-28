@@ -22,6 +22,7 @@ class PPTX():
         self.TWO_ITEM_WIDTH = Cm(11.22).pt
         self.ONE_ITEM_WIDTH = Cm(22.86).pt
         self.ITEM_HEIGHT = Cm(12.57).pt
+        self.TABLE_ROW_HEIGHT = Cm(1)
 
     def add_bulletpoint(self, item, shapes, placeholder, layout_number=None):
         """
@@ -120,8 +121,10 @@ class PPTX():
 
         for i, row in enumerate(df.index):
             table.cell(i + 1, 0).text = str(row)
+            table.rows[i].height = self.TABLE_ROW_HEIGHT
 
         for i, row in enumerate(df.index):
+            table.rows[i + 1].height = self.TABLE_ROW_HEIGHT
             for e, item in enumerate(df.loc[row]):
                 table.cell(i + 1, e + 1).text = str(item)
         return table
