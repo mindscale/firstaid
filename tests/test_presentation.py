@@ -1,7 +1,8 @@
 from itertools import combinations
+import pytest
+import unittest
 
 import pandas as pd
-import pytest
 from firstaid.pptx import PPTX
 
 
@@ -76,6 +77,33 @@ def test_mixed_combinations():
     for i, (left, right) in enumerate(comb):
         p.add('This is a test', left, right)
     p.save('tests/presentation_test_results/test_combination.pptx')
+
+
+class TestError(unittest.TestCase):
+    def test_identify_tuple(self):
+        """처음보는 자료형"""
+        p = PPTX()
+        with self.assertRaises(TypeError):
+            p.identify_content(tuple([1, 2]))
+
+    def test_bullet_list_elements(self):
+        """['가나다', '마바사] 형태인지 확인"""
+        p = PPTX()
+        with self.assertRaises(TypeError):
+            p.identify_content(['abc', 1, ['a', 'b', 'c']])
+
+    def test_is_image_file(self):
+        """'image.png' 형태인지 확인"""
+        p = PPTX()
+        with self.assertRaises(FileNotFoundError):
+            p.identify_content('this is a string')
+
+    def test_chart_dict_keys(self):
+        """df 와 chart_type 이 들어있는지 확인"""
+        p = PPTX()
+        df = pd.DataFrame([[1, 2, 3]])
+        with self.assertRaises(KeyError):
+            p.identify_content({'df': df, 'chart': 'libe'})
 
 
 @pytest.mark.xfail(run=False)

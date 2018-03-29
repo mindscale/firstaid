@@ -46,14 +46,14 @@ class PPTX():
         :param height: (initialized with randomly large number)
         """
 
-        def resize(width, height, lim_width, lim_height, reverse=False):
+        def resize(width, height, lim_width, lim_height):
             width = lim_width if width == 0 else width
             height = lim_height if height == 0 else height
 
             sd = {'width': lim_width, 'height': lim_height}
             d = {'width': width, 'height': height}
 
-            if reverse:  # horizontal placeholder
+            if lim_width > lim_height:  # horizontal placeholder
                 max_key = min(d.keys(), key=lambda k: d[k])
             else:  # vertical placeholder
                 max_key = max(d.keys(), key=lambda k: d[k])
@@ -83,7 +83,7 @@ class PPTX():
             width, height = resize(width, height, self.TWO_ITEM_WIDTH, self.ITEM_HEIGHT)
 
         else:  # only 1 item on slide (horizontal placeholder)
-            width, height = resize(width, height, self.ONE_ITEM_WIDTH, self.ITEM_HEIGHT, reverse=True)
+            width, height = resize(width, height, self.ONE_ITEM_WIDTH, self.ITEM_HEIGHT)
             x = max((self.SLIDE_WIDTH - width) / 2, self.X)
 
         return x, width, height
@@ -158,18 +158,29 @@ class PPTX():
         """
         # bullet point
         if isinstance(content, list):
-            return self.add_bulletpoint(content, **kwargs)
+            truth_value = all([isinstance(i, str) for i in content])
+            if truth_value:
+                return self.add_bulletpoint(content, **kwargs)
+            else:
+                raise TypeError('리스트 내의 자료형이 문자열이 아닙니다')
         # image
         elif isinstance(content, str):
-            return self.add_image(content, **kwargs)
+            try:
+                Image.open(content)
+                return self.add_image(content, **kwargs)
+            except FileNotFoundError:
+                raise FileNotFoundError('파일명을 확인해주세요')
         # table
         elif isinstance(content, pd.DataFrame):
             return self.add_table(content, **kwargs)
         # chart
         elif isinstance(content, dict):
-            return self.add_plot(content, **kwargs)
+            if not content.get('df').empty and content.get('chart_type') in ['line', 'bar']:
+                return self.add_plot(content, **kwargs)
+            else:
+                raise KeyError("사전의 내용을 확인해주세요")
         else:
-            print('지원하지 않는 자료입니다')
+            raise TypeError('지원하지 않는 자료입니다')
 
     def add(self, title, content1, content2=None):
         """
