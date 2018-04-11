@@ -108,15 +108,15 @@ class DOCX():
         """
         self.doc.add_paragraph('')
 
-    def add(self, content='', filename=''):
+    def add(self, content='', image=''):
         """
         main function to add content to page
         :param content: content to insert in page
-        :param filename: only used if content is image files
+        :param image: only used if content is image files
         """
         # image
-        if filename:
-            self.add_image(filename)
+        if image:
+            self.add_image(image)
         # string
         if isinstance(content, list):
             self.add_paragraph(content)

@@ -24,9 +24,9 @@ def test_doc_paragraph():
 
 def test_doc_image():
     doc = DOCX()
-    doc.add(filename='tests/icecream.png')
+    doc.add(image='tests/icecream.png')
     doc.add(['아이스크림입니다'])
-    doc.add(filename='tests/icecream.png')
+    doc.add(image='tests/icecream.png')
     doc.save('tests/document_test_results/test_image.docx')
 
 
@@ -67,7 +67,7 @@ def test_doc_getting_started_pages1():
     my_file.add([paragraphs[1]])
     my_file.page_break()
 
-    my_file.add(filename='tests/icecream.png')
+    my_file.add(image='tests/icecream.png')
     my_file.page_break()
 
     df = pd.DataFrame([[10, 30, 50], [24, 13, 70]],
@@ -88,19 +88,19 @@ def test_doc_getting_started_pages2():
     rep = '의 발자국은 다음과 같이 생겼다.'
 
     my_file.add(['새{}'.format(rep)])  # 본문 내용 추가
-    my_file.add(filename='tests/bird.png')  # 이미지 추가
+    my_file.add(image='tests/bird.png')  # 이미지 추가
     my_file.blank_line()  # 빈 줄 추가
 
     my_file.add(['개{}'.format(rep)])
-    my_file.add(filename='tests/dog.png')
+    my_file.add(image='tests/dog.png')
     my_file.blank_line()
 
     my_file.add(['말{}'.format(rep)])
-    my_file.add(filename='tests/horse.png')
+    my_file.add(image='tests/horse.png')
     my_file.blank_line()
 
     my_file.add(['사람{}'.format(rep)])
-    my_file.add(filename='tests/human.png')
+    my_file.add(image='tests/human.png')
 
     my_file.page_break()  # 쪽 넘김
 
