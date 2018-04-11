@@ -129,21 +129,19 @@ class PPTX():
                 table.cell(i + 1, e + 1).text = str(item)
         return table
 
-    def add_plot(self, plot_dict, shapes, placeholder, layout_number):
+    def add_plot(self, chart_class, shapes, placeholder, layout_number):
         """
         add pptx chart to slide. currently supports line and bar plots only.
-        :param plot_dict: dictionary containing the dataframe and chart type.
+        :param chart_class: dictionary containing the dataframe and chart type.
         ex) {'df': df, 'chart_type': 'bar' or 'line'}
         """
         chart_data = ChartData()
-        df = plot_dict['df']
+        df = chart_class.df
         chart_data.categories = df.columns
         for i, r in enumerate(df.index):
             chart_data.add_series(str(r), df.iloc[i])
 
-        chart_type_dict = {'bar': XL_CHART_TYPE.COLUMN_CLUSTERED,
-                           'line': XL_CHART_TYPE.LINE}
-        chart_type = chart_type_dict[plot_dict['chart_type']]
+        chart_type = chart_class.chart_type
         x, width, height = self.object_size(placeholder, layout_number)
 
         chart = shapes.add_chart(chart_type, Pt(x), Pt(self.Y), Pt(width), Pt(height), chart_data).chart
@@ -173,14 +171,15 @@ class PPTX():
         # table
         elif isinstance(content, pd.DataFrame):
             return self.add_table(content, **kwargs)
-        # chart
-        elif isinstance(content, dict):
-            if not content.get('df').empty and content.get('chart_type') in ['line', 'bar']:
-                return self.add_plot(content, **kwargs)
-            else:
-                raise KeyError("사전의 내용을 확인해주세요")
         else:
-            raise TypeError('지원하지 않는 자료입니다')
+            try:
+                # chart
+                if isinstance(content.df, pd.DataFrame):
+                    return self.add_plot(content, **kwargs)
+                else:
+                    raise TypeError('지원하지 않는 자료입니다')
+            except:
+                raise TypeError('지원하지 않는 자료입니다')
 
     def add(self, title, content1, content2=None):
         """
@@ -216,3 +215,15 @@ class PPTX():
         """
         self.prs.save(file_name)
         print('"{}" 파일이 생성되었습니다.'.format(file_name))
+
+
+class LineChart:
+    def __init__(self, df):
+        self.df = df
+        self.chart_type = XL_CHART_TYPE.LINE
+
+
+class BarChart:
+    def __init__(self, df):
+        self.df = df
+        self.chart_type = XL_CHART_TYPE.COLUMN_CLUSTERED

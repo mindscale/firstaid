@@ -3,7 +3,7 @@ import pytest
 import unittest
 
 import pandas as pd
-from firstaid.pptx import PPTX
+from firstaid.pptx import PPTX, LineChart, BarChart
 
 
 def test_bulletpoint1():
@@ -47,20 +47,17 @@ def test_table2():
 
 def test_plot1():
     df = pd.DataFrame([[1, 2, 3], [4, 5, 6]], columns=['a', 'b', 'c'], index=['남', '여'])
-    d = {'df': df, 'chart_type': 'line'}
 
     p = PPTX()
-    p.add('This is a test', d)
+    p.add('This is a test', LineChart(df))
     p.save('tests/presentation_test_results/test_plot1.pptx')
 
 
 def test_plot2():
     df = pd.DataFrame([[1, 2, 3], [4, 5, 6]], columns=['a', 'b', 'c'], index=['남', '여'])
-    d1 = {'df': df, 'chart_type': 'line'}
-    d2 = {'df': df, 'chart_type': 'bar'}
 
     p = PPTX()
-    p.add('This is a test', d1, d2)
+    p.add('This is a test', LineChart(df), BarChart(df))
     p.save('tests/presentation_test_results/test_plot2.pptx')
 
 
@@ -68,9 +65,8 @@ def test_mixed_combinations():
     bullet = ['first bullet', 'second bullet']
     img = 'tests/icecream.png'
     df = pd.DataFrame([[1, 2, 3], [4, 5, 6]], columns=['a', 'b', 'c'], index=['남', '여'])
-    d = {'df': df, 'chart_type': 'line'}
 
-    all_cases = [bullet, img, df, d]
+    all_cases = [bullet, img, df, BarChart(df)]
     comb = list(combinations(all_cases, 2))
 
     p = PPTX()
@@ -98,13 +94,6 @@ class TestError(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             p.identify_content('this is a string')
 
-    def test_chart_dict_keys(self):
-        """df 와 chart_type 이 들어있는지 확인"""
-        p = PPTX()
-        df = pd.DataFrame([[1, 2, 3]])
-        with self.assertRaises(KeyError):
-            p.identify_content({'df': df, 'chart': 'libe'})
-
 
 @pytest.mark.xfail(run=False)
 def test_getting_started_pics():
@@ -128,10 +117,8 @@ def test_getting_started_pics():
                       columns=['A사', 'B사', 'C사'],
                       index=['남', '여'])
     my_file.add('표 슬라이드 입니다', df)
-    chart_dict = {'df': df,  # pandas DataFrame 형식
-                  'chart_type': 'line'}  # 'bar' 도 가능하다
     my_file.add('차트 슬라이드 입니다',
-                chart_dict)
+                BarChart(df))
 
     my_file.add('내가 좋아하는 디저트',
                 ['아이스크림', '초콜릿'],  # 문자열
