@@ -1,5 +1,6 @@
 *.egg-info
 *.pptx
+*.docx
 .cache/
 .idea/
 *.pyc
