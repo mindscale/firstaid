@@ -1,5 +1,4 @@
 import pandas as pd
-import pytest
 
 from firstaid.docx import DOCX
 
@@ -9,7 +8,7 @@ def test_doc_title():
     doc.add('1. 제목입니다')
     doc.blank_line()
     doc.add('2. 제목입니다')
-    doc.save('tests/document_test_results/test_title.docx')
+    doc.save('test_title.docx')
 
 
 def test_doc_paragraph():
@@ -19,15 +18,15 @@ def test_doc_paragraph():
     doc.page_break()
     doc.add(['첫번째 문단입니다. ' * 30])
     doc.add(['두번째 문단입니다. ' * 45])
-    doc.save('tests/document_test_results/test_paragraph.docx')
+    doc.save('test_paragraph.docx')
 
 
-def test_doc_image():
+def test_doc_image(icecream_png):
     doc = DOCX()
-    doc.add(image='tests/icecream.png')
+    doc.add(image=icecream_png)
     doc.add(['아이스크림입니다'])
-    doc.add(image='tests/icecream.png')
-    doc.save('tests/document_test_results/test_image.docx')
+    doc.add(image=icecream_png)
+    doc.save('test_image.docx')
 
 
 def test_doc_table():
@@ -38,11 +37,10 @@ def test_doc_table():
     doc.add(df)
     doc.add(['표입니다'])
     doc.add(df)
-    doc.save('tests/document_test_results/test_table.docx')
+    doc.save('test_table.docx')
 
 
-@pytest.mark.xfail(run=False)
-def test_doc_getting_started_pages1():
+def test_doc_getting_started_pages1(icecream_png):
     my_file = DOCX()  # 작업 시작
 
     my_file.add(content=['첫 문장입니다', '두번째 문장입니다'])
@@ -67,7 +65,8 @@ def test_doc_getting_started_pages1():
     my_file.add([paragraphs[1]])
     my_file.page_break()
 
-    my_file.add(image='tests/icecream.png')
+    
+    my_file.add(image=icecream_png)
     my_file.page_break()
 
     df = pd.DataFrame([[10, 30, 50], [24, 13, 70]],
@@ -75,11 +74,10 @@ def test_doc_getting_started_pages1():
                       index=['남', '여'])
     my_file.add(df)
 
-    my_file.save('tests/document_test_results/example.docx')
+    my_file.save('example.docx')
 
 
-@pytest.mark.xfail(run=False)
-def test_doc_getting_started_pages2():
+def test_doc_getting_started_pages2(bird_png, dog_png, horse_png, human_png):
     my_file = DOCX()  # 작업 시작
 
     # 1챕터
@@ -88,19 +86,19 @@ def test_doc_getting_started_pages2():
     rep = '의 발자국은 다음과 같이 생겼다.'
 
     my_file.add(['새{}'.format(rep)])  # 본문 내용 추가
-    my_file.add(image='tests/bird.png')  # 이미지 추가
+    my_file.add(image=bird_png)  # 이미지 추가
     my_file.blank_line()  # 빈 줄 추가
 
     my_file.add(['개{}'.format(rep)])
-    my_file.add(image='tests/dog.png')
+    my_file.add(image=dog_png)
     my_file.blank_line()
 
     my_file.add(['말{}'.format(rep)])
-    my_file.add(image='tests/horse.png')
+    my_file.add(image=horse_png)
     my_file.blank_line()
 
     my_file.add(['사람{}'.format(rep)])
-    my_file.add(image='tests/human.png')
+    my_file.add(image=human_png)
 
     my_file.page_break()  # 쪽 넘김
 
@@ -124,4 +122,4 @@ def test_doc_getting_started_pages2():
         paragraphs.append(sentence)
     my_file.add(paragraphs)
 
-    my_file.save('tests/document_test_results/animals.docx')
+    my_file.save('animals.docx')
