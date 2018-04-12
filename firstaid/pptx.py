@@ -1,5 +1,4 @@
 from io import BytesIO
-import operator
 
 import pandas as pd
 from PIL import Image

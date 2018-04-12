@@ -1,5 +1,4 @@
 from io import BytesIO
-import re
 
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
